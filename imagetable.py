@@ -10,11 +10,12 @@ def cumsum(xs):
     return ys
 
 class ImageTable:
-    def __init__(self, bgcolor=None):
+    def __init__(self, bgcolor=None, cellpadding=0):
         self.tds = []
         self.row = 0
         self.col = 0
         self.bgcolor = bgcolor
+        self.cellpadding = cellpadding
 
     def tr(self):
         self.col = 0
@@ -43,7 +44,7 @@ class ImageTable:
             for i in range(nrow):
                 if (i, j) in table:
                     xs.append(table[i, j].width)
-            width.append(max(xs))
+            width.append(max(xs) + self.cellpadding)
 
         height = []
         for i in range(nrow):
@@ -51,18 +52,18 @@ class ImageTable:
             for j in range(ncol):
                 if (i, j) in table:
                     xs.append(table[i, j].height)
-            height.append(max(xs))
+            height.append(max(xs) + self.cellpadding)
 
         cum_width = [0] + cumsum(width)
         cum_height = [0] + cumsum(height)
-        im = Image.new('RGB', (cum_width[-1], cum_height[-1]), color=self.bgcolor)
+        im = Image.new('RGB', (cum_width[-1] + self.cellpadding, cum_height[-1] + self.cellpadding), color=self.bgcolor)
         for td in self.tds:
-            pos = cum_width[td.col], cum_height[td.row]
+            pos = cum_width[td.col] + self.cellpadding, cum_height[td.row] + self.cellpadding
             im.paste(td.el, pos)
         return im
 
 if __name__ == '__main__':
-    tbl = ImageTable()
+    tbl = ImageTable(cellpadding=4)
     tbl.td(Image.open('img/baz.png'))
     tbl.td(Image.open('img/baz.png'))
     tbl.tr()
@@ -78,6 +79,6 @@ if __name__ == '__main__':
     tbl.td(Image.open('img/foo.png'))
     tbl.td(Image.open('img/bar.png'))
     tbl.tr()
-    tbl.td(Image.open('img/foo.png'), width=600)
+    tbl.td(Image.open('img/foo.png'))
     tbl.td(Image.open('img/foo.png'))
     tbl.image().save('output.png')
