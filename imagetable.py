@@ -32,6 +32,8 @@ class ImageTable:
         self.row += 1
 
     def td(self, el, width=None, height=None):
+        if isinstance(el, str):
+            el = txt2im(el)
         if width is None:
             width = el.size[0]
         if height is None:
@@ -82,7 +84,7 @@ if __name__ == '__main__':
     im = tbl.image()
 
     tbl = ImageTable(bgcolor=(0, 255, 255, 255), cellpadding=2)
-    tbl.td(txt2im('Epoch: 5'))
+    tbl.td('Epoch: 5')
     tbl.tr()
     tbl.td(Image.open('img/foo.png'))
     tbl.td(im)
