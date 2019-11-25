@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import collections
 
 Cell = collections.namedtuple('Cell', ['row', 'col', 'el', 'width', 'height'], defaults=[None, None])
@@ -9,8 +9,18 @@ def cumsum(xs):
         ys[i] += ys[i - 1]
     return ys
 
+def txt2im(txt):
+    font = ImageFont.truetype('/System/Library/Fonts/Courier.dfont', 16)
+    im = Image.new('RGB', (0, 0))
+    draw = ImageDraw.Draw(im)
+    size = draw.textsize(txt, font)
+    im = Image.new('RGB', size)
+    draw = ImageDraw.Draw(im)
+    draw.text((0, 0), txt, font=font)
+    return im
+
 class ImageTable:
-    def __init__(self, bgcolor=None, cellpadding=0):
+    def __init__(self, bgcolor=None, cellpadding=2):
         self.tds = []
         self.row = 0
         self.col = 0
@@ -71,7 +81,9 @@ if __name__ == '__main__':
     tbl.td(Image.open('img/baz.png'))
     im = tbl.image()
 
-    tbl = ImageTable(bgcolor=(0, 255, 255, 255))
+    tbl = ImageTable(bgcolor=(0, 255, 255, 255), cellpadding=2)
+    tbl.td(txt2im('Epoch: 5'))
+    tbl.tr()
     tbl.td(Image.open('img/foo.png'))
     tbl.td(im)
     tbl.tr()
