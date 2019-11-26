@@ -4,9 +4,9 @@ import collections
 Cell = collections.namedtuple('Cell', ['row', 'col', 'el', 'width', 'height'], defaults=[None, None])
 
 def cumsum(xs):
-    ys = xs.copy()
-    for i in range(1, len(ys)):
-        ys[i] += ys[i - 1]
+    ys = [xs[0]]
+    for i in range(1, len(xs)):
+        ys.append(ys[-1] + xs[i])
     return ys
 
 def txt2im(txt):
@@ -42,30 +42,11 @@ class ImageTable:
         self.col += 1
 
     def image(self):
-        nrow = 0
-        ncol = 0
-        table = dict()
+        width = collections.Counter()
+        height = collections.Counter()
         for td in self.tds:
-            nrow = max(nrow, td.row + 1)
-            ncol = max(ncol, td.col + 1)
-            table[td.row, td.col] = td
-
-        width = []
-        for j in range(ncol):
-            xs = []
-            for i in range(nrow):
-                if (i, j) in table:
-                    xs.append(table[i, j].width)
-            width.append(max(xs) + self.cellpadding)
-
-        height = []
-        for i in range(nrow):
-            xs = []
-            for j in range(ncol):
-                if (i, j) in table:
-                    xs.append(table[i, j].height)
-            height.append(max(xs) + self.cellpadding)
-
+            width[td.col] = max(width[td.col], td.width + self.cellpadding)
+            height[td.row] = max(height[td.row], td.height + self.cellpadding)
         cum_width = [0] + cumsum(width)
         cum_height = [0] + cumsum(height)
         im = Image.new('RGB', (cum_width[-1] + self.cellpadding, cum_height[-1] + self.cellpadding), color=self.bgcolor)
