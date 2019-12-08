@@ -9,22 +9,23 @@ def cumsum(xs):
         ys.append(ys[-1] + xs[i])
     return ys
 
-def txt2im(txt):
+def txt2im(txt, color, background_color):
     font = ImageFont.truetype('/System/Library/Fonts/Courier.dfont', 16)
     im = Image.new('RGB', (0, 0))
     draw = ImageDraw.Draw(im)
     size = draw.textsize(txt, font)
-    im = Image.new('RGB', size)
+    im = Image.new('RGB', size, color=background_color)
     draw = ImageDraw.Draw(im)
-    draw.text((0, 0), txt, font=font)
+    draw.text((0, 0), txt, fill=color, font=font)
     return im
 
 class ImageTable:
-    def __init__(self, bgcolor=None, cellpadding=2):
+    def __init__(self, color='black', background_color='white', cellpadding=2):
         self.tds = []
         self.row = 0
         self.col = 0
-        self.bgcolor = bgcolor
+        self.color = color
+        self.background_color = background_color
         self.cellpadding = cellpadding
 
     def tr(self):
@@ -33,7 +34,7 @@ class ImageTable:
 
     def td(self, el, width=None, height=None):
         if isinstance(el, str):
-            el = txt2im(el)
+            el = txt2im(el, color=self.color, background_color=self.background_color)
         if width is None:
             width = el.size[0]
         if height is None:
@@ -49,31 +50,26 @@ class ImageTable:
             height[td.row] = max(height[td.row], td.height + self.cellpadding)
         cum_width = [0] + cumsum(width)
         cum_height = [0] + cumsum(height)
-        im = Image.new('RGB', (cum_width[-1] + self.cellpadding, cum_height[-1] + self.cellpadding), color=self.bgcolor)
+        im = Image.new('RGB', (cum_width[-1] + self.cellpadding, cum_height[-1] + self.cellpadding), color=self.background_color)
         for td in self.tds:
             pos = cum_width[td.col] + self.cellpadding, cum_height[td.row] + self.cellpadding
             im.paste(td.el, pos)
         return im
 
 if __name__ == '__main__':
-    tbl = ImageTable(cellpadding=4)
-    tbl.td(Image.open('img/baz.png'))
-    tbl.td(Image.open('img/baz.png'))
-    tbl.tr()
-    tbl.td(Image.open('img/baz.png'))
-    tbl.td(Image.open('img/baz.png'))
-    im = tbl.image()
+    from PIL import Image
 
-    tbl = ImageTable(bgcolor=(0, 255, 255, 255), cellpadding=2)
-    tbl.td('Epoch: 5')
+    red_fat = Image.new('RGB', (128, 64), color=(255, 0, 0, 255))
+    green_thin = Image.new('RGB', (32, 128), color=(0, 255, 0, 255))
+
+    tbl = ImageTable()
+    tbl.td('Some text')
     tbl.tr()
-    tbl.td(Image.open('img/foo.png'))
-    tbl.td(im)
+    tbl.td(red_fat)
+    tbl.td('More text')
     tbl.tr()
-    tbl.td(Image.open('img/bar.png'))
-    tbl.td(Image.open('img/foo.png'))
-    tbl.td(Image.open('img/bar.png'))
-    tbl.tr()
-    tbl.td(Image.open('img/foo.png'))
-    tbl.td(Image.open('img/foo.png'))
-    tbl.image().save('output.png')
+    tbl.td(green_thin)
+    tbl.td(red_fat)
+    tbl.td(green_thin)
+    tbl.td(green_thin)
+    tbl.image().save('table.png')
